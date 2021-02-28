@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormDesigner", "FormDesigner.csproj", "{B4F6F0F2-83F7-49E0-B6BA-31D5529A0CDC}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{B4F6F0F2-83F7-49E0-B6BA-31D5529A0CDC}.Debug.ActiveCfg = Debug|.NET
+		{B4F6F0F2-83F7-49E0-B6BA-31D5529A0CDC}.Debug.Build.0 = Debug|.NET
+		{B4F6F0F2-83F7-49E0-B6BA-31D5529A0CDC}.Release.ActiveCfg = Release|.NET
+		{B4F6F0F2-83F7-49E0-B6BA-31D5529A0CDC}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

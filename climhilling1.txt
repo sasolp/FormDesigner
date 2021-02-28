@@ -1,0 +1,277 @@
+/******************************************
+h i l l . c
+f u n c t i o n f o r p e r f o rming h i l l c l imb i n g
+on an i n d i v i d u a l wi t h ind e x x
+*******************************************/
+#def ine BITS INPUT 11 /* number o f i n p u t b i t s */
+#def ine PARTITIONS 60 /* number o f p a r t i t i o n s */
+#def ine N ( int ) pow(2 ,BITS INPUT) /* Number o f o u t p u t s ( l e n g t h t r u t h t a b l e ) */
+#def ine MAX POP 10 /* S i z e o f Po p u l a t i on */
+#def ine NEXT POP (MAX POP*(MAX POP?1) )/2+MAX POP /* S i z e o f ne x t g e n e r a t i o n */
+#def ine NEXT POP (MAX POP*(MAX POP?1) )/2+MAX POP
+typedef unsigned Gene ;
+typedef struct org {
+double c o s t ; /* c o s t o f organi sm*/
+double nl ; /*non?l i n e a r i t y o f organi sm*/
+double ac ; /* a u t o c o r r e l a t i o n o f organi sm*/
+int a i ; /* a l g e b r a i c immuni ty o f an organi sm */
+Gene t ruth [N] ; /* The t r u t h t a b l e */
+Gene r s t t [PARTITIONS ] ; /* The r o t a t i o n symmet r ic t r u t h t a b l e */
+} Organism ;
+typedef Organism Populat ion ;
+extern Populat ion G Population [MAX POP] ; /* The p o p u l a t i o n */
+extern Populat ion G Next Pop [NEXT POP] ; /* The ne x t g e n e r a t i o n */
+extern Populat ion Best BF ; /* b e s t nl f u n c t i o n found */
+extern Populat ion Best BFac ; /* b e s t ac f u n c t i o n found */
+#include <s t d i o . h>
+#include <s t d l i b . h>
+
+#include <math . h>
+#include <time . h>
+long wht [N] ;
+long ac t [N] ;
+long wht2 [N] ;
+long whtold [N] ;
+int wplusmin [N] ; // 1 i f F(w)=Wmax , 2 i f F(w)=?Wmax, 3 i f F(w)=Wmax?4, 4 i f F(w)=?Wmax+4
+int acplusmin [N] ; // 1 i f r ( s )=acmax , 2 i f r ( s )=?acmax , 3 i f r ( s )=acmax?8, 4 i f r ( s )=?acmax+8, 5 i f
+r ( s )=acmax?4, 6 i f r ( s )=?acmax+4
+int nl s t r ong ;
+int ac s t rong ;
+int weight ;
+unsigned lwt abl e [N] [N] ;
+long max ;
+int index ;
+/* c a l c u l a t e wal sh and a u t o c o r r e l a t i o n s p e c t r a and c l a s s e s o f w and s v a l u e s */
+void whtable ( ) {
+unsigned n , i ;
+unsigned long m, k , mi ;
+long y [N] ;
+weight=0;
+for ( i =0; i<N; i++) wht [ i ]=(unsigned) pow(?1,G Population [ index ] . t ruth [ i ] ) ;
+mi = 1 ;
+for ( i = 0 ; i < BITS INPUT; i++) {
+for ( k = 0 ; k < N; k++) {
+i f ( ( k >> i ) % 2) {y [ k ] = wht [ k?mi ] ? wht [ k ] ; }
+el se {y [ k ] = wht [ k ] + wht [ k+mi ] ; }
+}
+for ( k = 0 ; k < N; k++) {
+wht [ k ] = ( y [ k ] ) ;
+}
+mi *= 2 ;
+}
+wht [ 0 ]=0 ;
+max =0;
+
+for ( i =1; i<N; i++){
+i f ( f abs (wht [ i ] )>max) {
+max=f abs (wht [ i ] ) ;
+}
+}
+// d i v i d e w ’ s i n t o c l a s s e s
+for ( i =0; i<N; i++){
+wplusmin [ i ] = 0 ;
+i f (wht [ i ]==max) wplusmin [ i ] = 1 ;
+i f (wht [ i ]==?max) wplusmin [ i ] = 2 ;
+i f (wht [ i ]==max?4) wplusmin [ i ] = 3 ;
+i f (wht [ i ]==?max+4) wplusmin [ i ] = 4 ;
+}
+for ( i =0; i<N; i++){
+ac t [ i ]=(unsigned) pow(wht [ i ] , 2 ) ;
+}
+mi = 1 ;
+for ( i = 0 ; i < BITS INPUT; i++) {
+for ( k = 0 ; k < N; k++) {
+i f ( ( k >> i ) % 2) {y [ k ] = ac t [ k?mi ] ? ac t [ k ] ; }
+el se {y [ k ] = ac t [ k ] + ac t [ k+mi ] ; }
+}
+for ( k = 0 ; k < N; k++) {
+ac t [ k ] = ( y [ k ] ) ;
+}
+mi *= 2 ;
+}
+ac t [ 0 ]=0 ;
+max =0;
+for ( i =1; i<N; i++){
+ac t [ i ]=ac t [ i ] /N;
+i f ( ( ( int ) ac t [ i ] ) %4!=0){
+ac t [ i ]++;
+i f ( ac t [ i ]<0) ac t [ i ]+=2;
+}
+i f ( f abs ( ac t [ i ] )>max) {
+max=f abs ( ac t [ i ] ) ;
+}
+}
+// d i v i d e s ’ s i n t o c l a s s e s
+for ( i =1; i<N; i++){
+acplusmin [ i ] = 0 ;
+i f ( ac t [ i ]==max) acplusmin [ i ] = 1 ;
+i f ( ac t [ i ]==?max) acplusmin [ i ] = 2 ;
+i f ( ac t [ i ]==max?8) acplusmin [ i ] = 3 ;
+i f ( ac t [ i ]==?max+8) acplusmin [ i ] = 4 ;
+i f ( ac t [ i ]==max?4) acplusmin [ i ] = 5 ;
+i f ( ac t [ i ]==?max+4) acplusmin [ i ] = 6 ;
+}
+}
+/* c a l c u l a t e v a l u e o f l i n e a r f u n c t i o n Lw( x ) f o r g i v e n i (=w) and x*/
+unsigned lw( int i , int x ) {
+i f ( lwt abl e [ i ] [ x ] !=0 ) return lwt abl e [ i ] [ x ] ;
+unsigned r e s u l t , temp ;
+int j ;
+temp = i & x ;
+r e s u l t =0;
+for ( j=BITS INPUT?1; j >=0; j??){
+i f ( temp>=pow(2 , j ) ) {
+temp=temp?pow(2 , j ) ;
+r e s u l t=r e s u l t ˆ 1 ;
+}
+}
+lwt abl e [ i ] [ x]= r e s u l t ;
+lwt abl e [ x ] [ i ]= r e s u l t ;
+return r e s u l t ;
+}
+/* che c k c o n d i t i o n s f o r i n p u t s x1 and x2 , r e t u r n 1 i f ok e l s e 0 */
+
+int cond ( int x1 , int x2 ) {
+int i ;
+i f ( nl s t r ong==1){ // c o n d i t i o n s f o r s t r o n g nl h i l l c l imb i n g
+for ( i =0; i<N; i++){
+i f (wplusmin [ i ]==1 && ( G Population [ index ] . t ruth [ x1 ] !=lw( i , x1 ) | | G Population [ index
+] . t ruth [ x2 ] !=lw( i , x2 ) ) ) {
+return 0 ;
+}
+i f (wplusmin [ i ]==2 && ( G Population [ index ] . t ruth [ x1]==lw( i , x1 ) | | G Population [ index
+] . t ruth [ x2]==lw( i , x2 ) ) ) {
+return 0 ;
+}
+i f (wplusmin [ i ]==3 && G Population [ index ] . t ruth [ x1 ] !=lw( i , x1 ) && G Population [ index
+] . t ruth [ x2 ] !=lw( i , x2 ) ) {
+return 0 ;
+}
+i f (wplusmin [ i ]==4 && G Population [ index ] . t ruth [ x1]==lw( i , x1 ) && G Population [ index
+] . t ruth [ x2]==lw( i , x2 ) ) {
+return 0 ;
+}
+}
+} el se { // c o n d i t i o n s f o r weak nl h i l l c l imb i n g
+for ( i =0; i<N; i++){
+i f (wplusmin [ i ]==1 && ( G Population [ index ] . t ruth [ x1 ] !=lw( i , x1 ) && G Population [ index
+] . t ruth [ x2 ] !=lw( i , x2 ) ) ) {
+return 0 ;
+}
+i f (wplusmin [ i ]==2 && ( G Population [ index ] . t ruth [ x1]==lw( i , x1 ) && G Population [ index
+] . t ruth [ x2]==lw( i , x2 ) ) ) {
+return 0 ;
+}
+}
+}
+i f ( ac s t rong==1){ // c o n d i t i o n s f o r s t r o n g ac h i l l c l imb i n g
+for ( i =1; i<N; i++){
+i f ( acplusmin [ i ]==1 && ( ( x1 ˆ x2 == i ) | | G Population [ index ] . t ruth [ x1 ] !=
+G Population [ index ] . t ruth [ x1ˆ i ] | | G Population [ index ] . t ruth [ x2 ] != G Population [
+index ] . t ruth [ x2ˆ i ] ) ) {
+return 0 ;
+}
+i f ( acplusmin [ i ]==2 && ( ( x1 ˆ x2 == i ) | | G Population [ index ] . t ruth [ x1]==G Population
+[ index ] . t ruth [ x1ˆ i ] | | G Population [ index ] . t ruth [ x2]==G Population [ index ] . t ruth
+[ x2ˆ i ] ) ) {
+return 0 ;
+}
+i f ( ( acplusmin [ i ]==3 | | acplusmin [ i ]==5) && ( x1 ˆ x2 != i ) && G Population [ index ] .
+t ruth [ x1 ] != G Population [ index ] . t ruth [ x1ˆ i ] && G Population [ index ] . t ruth [ x2 ] !=
+G Population [ index ] . t ruth [ x2ˆ i ] ) {
+return 0 ;
+}
+i f ( ( acplusmin [ i ]==4 | | acplusmin [ i ]==6) && ( x1 ˆ x2 != i ) && G Population [ index ] .
+t ruth [ x1]==G Population [ index ] . t ruth [ x1ˆ i ] && G Population [ index ] . t ruth [ x2]==
+G Population [ index ] . t ruth [ x2ˆ i ] ) {
+return 0 ;
+}
+}
+} el se { // c o n d i t i o n s f o r weak ac h i l l c l imb i n g
+for ( i =1; i<N; i++){
+i f ( ( acplusmin [ i ]==1 | | acplusmin [ i ]==5) && ( ( x1 ˆ x2 ) != i ) && G Population [ index ] .
+t ruth [ x1 ] != G Population [ index ] . t ruth [ x1ˆ i ] && G Population [ index ] . t ruth [ x2 ] !=
+G Population [ index ] . t ruth [ x2ˆ i ] ) {
+return 0 ;
+}
+i f ( ( acplusmin [ i ]==2 | | acplusmin [ i ]==6) && ( ( x1 ˆ x2 ) != i ) && G Population [ index ] .
+t ruth [ x1]==G Population [ index ] . t ruth [ x1ˆ i ] && G Population [ index ] . t ruth [ x2]==
+G Population [ index ] . t ruth [ x2ˆ i ] ) {
+return 0 ;
+}
+}
+}
+return 1 ;
+}
+/* updat e wal sh and ac s p e c t r a and c l a s s e s o f w and s v a l u e s */
+void updat e tabl e ( int l , int j , unsigned fx ) {
+
+unsigned n , i ;
+unsigned long m, k , mi ;
+long r [N] ;
+int w;
+unsigned x , y ;
+max =0;
+for (w=0;w<N;w++){
+x=lw(w, l ) ;
+y=lw(w, j ) ;
+i f ( fx==x && fx !=y ) wht [w]=wht [w]?4;
+i f ( fx !=x && fx==y ) wht [w]=wht [w]+4;
+i f ( f abs (wht [w] )>max) max=f abs (wht [w] ) ;
+}
+for (w=0;w<N;w++){
+wplusmin [w] = 0 ;
+i f (wht [w]==max) wplusmin [w] = 1 ;
+i f (wht [w]==?max) wplusmin [w] = 2 ;
+i f (wht [w]==max?4) wplusmin [w] = 3 ;
+i f (wht [w]==?max+4) wplusmin [w] = 4 ;
+}
+max =0;
+for (w=1;w<N;w++){
+i f ( ( l ˆ j ) !=w) {
+x=G Population [ index ] . t ruth [ l ˆw] ;
+y=G Population [ index ] . t ruth [ j ˆw] ;
+i f ( fx==x && fx !=y ) ac t [w]=ac t [w]?8;
+i f ( fx !=x && fx==y ) ac t [w]=ac t [w]+8;
+}
+i f ( f abs ( ac t [ i ] )>max) max=f abs ( ac t [ i ] ) ;
+}
+for ( i =1; i<N; i++){
+acplusmin [ i ] = 0 ;
+i f ( ac t [ i ]==max) acplusmin [ i ] = 1 ;
+i f ( ac t [ i ]==?max) acplusmin [ i ] = 2 ;
+i f ( ac t [ i ]==max?8) acplusmin [ i ] = 3 ;
+i f ( ac t [ i ]==?max+8) acplusmin [ i ] = 4 ;
+i f ( ac t [ i ]==max?4) acplusmin [ i ] = 5 ;
+i f ( ac t [ i ]==?max+4) acplusmin [ i ] = 6 ;
+}
+}
+// h i l l c l imb on i n d i v i d u a l wi t h ind e x x
+void h i l l c l imb ( int x ) {
+index=x ;
+double previousmax ;
+int ok=1;
+int i =0, j ;
+int round=0; // r e s e t t o z e r o a f t e r swap , when round=N ?> a l l i ’ s s e a r c h e d=>s t o p
+whtable ( ) ; // c a l c u t e wal sh and a u t o c o r r e l a t i o n s p e c t r a
+while ( ok==1){
+ok=0;
+previousmax=max ;
+while ( round<N && ok==0){
+j=i +1;
+while ( j<N && ok==0){
+// che c k c o n d i t i o n s f o r i n p u t s i and j , i f ok ?> swap and updat e s p e c t r a
+i f ( G Population [ index ] . t ruth [ j ] != G Population [ index ] . t ruth [ i ] && cond ( i , j )==1){
+G Population [ index ] . t ruth [ j ]=G Population [ index ] . t ruth [ j ] ˆ 1 ;
+G Population [ index ] . t ruth [ i ]=G Population [ index ] . t ruth [ i ] ˆ 1 ;
+int k ;
+updat e tabl e ( i , j , G Population [ index ] . t ruth [ j ] ) ;
+ok=1;
+round=0;
+}
+j++;
+}
+round++;
+i=( i+1)%N;
+}
+}

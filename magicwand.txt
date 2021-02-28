@@ -1,0 +1,173 @@
+		public void magicWand(Point p)
+		{
+			ArrayList  q=new ArrayList();
+			int x,y,row=(short)p.Y,col=(short)p.X;
+			q.Add(p);
+			int counter=0,counter1=0,con=0;
+			magicSelectedPoints=new ArrayList();
+			magicSelectedPoints.Add(p);
+			Color color=pixels[row,col];
+			
+
+			while(true)
+			{
+				
+				con++;
+				if(counter1 >=q.Count )break;
+//				{
+//break;
+//				}
+				//p=(Point)q.Dequeue();
+				p=(Point)q[counter1];counter1++;
+				x=p.X ;
+				y=p.Y;
+				for(int i=1;i<=8;i++)
+				{
+					switch(i)
+					{
+						case 1:{row=y-1;col=x-1;break;}
+						case 2:{row=y;col=x-1;break;}
+						case 3:{row=y+1;col=x-1;break;}
+						case 4:{row=y+1;col=x;break;}
+						case 5:{row=y+1;col=x+1;break;}
+						case 6:{row=y;col=x+1;break;}
+						case 7:{row=y-1;col=x+1;break;}
+						case 8:{row=y-1;col=x;break;}
+
+					}
+					Point newpnt=new Point(col,row);
+					if((col>=0)&&(col<577)&&(row>=0)&&(row<483))
+					if(!q.Contains(newpnt))
+					{
+						
+						if(pixels[row,col].ToArgb()==(color.ToArgb()))
+						{
+							
+						
+								//Graphics g=Graphics.FromImage(this.Image );
+							//g.DrawEllipse(Pens.Red,newpnt.X,newpnt.Y,1,1);
+								//bit.SetPixel(newpnt.X,newpnt.Y,Color.Red );
+							
+							//this.Image.Dispose();
+						
+							magicSelectedPoints.Add(newpnt);
+							q.Add(newpnt);
+						}
+					}counter++;
+				}
+//				if(con==2)
+//				{
+//					q.RemoveAt(0);
+//					con=0;
+//				}
+				//q.Dequeue();
+				
+			}
+		}
+		public void magicWandX(Point p)
+		{
+
+			try
+			{
+				short col=(short)p.X,row=(short)p.Y ;
+				Color color=pixels[row,col];
+				byte notMatchCount=0;
+				short steps=1;
+				short counter=0;
+				short control=1;
+				magicSelectedPoints=new ArrayList();
+				magicSelectedPoints.Add(p);
+				while(notMatchCount < control  )
+				{
+				
+					if((col>576)||(row>482))break;
+					counter++;
+					control=(short)(counter*8);
+					notMatchCount=0;
+				
+					for(int i=1; i <= steps*2;i++)
+					{
+						if( i <= steps )
+						{
+							//left
+						
+							col--;
+							if((col<0)||(row<0)||(col>576)||(row>482)){notMatchCount++;continue;}
+							//verification
+							if(pixels[row,col].ToArgb()==(color.ToArgb()))
+							{
+								magicSelectedPoints.Add(new Point(row,col));
+							}
+							else
+								notMatchCount++;
+						
+						}
+						else
+						{
+							//down
+							row++;
+							//verification
+							if((col<0)||(row<0)||(col>576)||(row>482)){notMatchCount++;continue;}
+							if(pixels[row,col].ToArgb()==(color.ToArgb()))
+							{
+								magicSelectedPoints.Add(new Point(row,col));
+							}
+							else
+								notMatchCount++;
+						
+						}
+					}
+				
+					for(int i=1; i <= (steps+1)*2;i++)
+					{
+						if( i <= (steps+1) )
+						{
+							//right
+						
+							col++;
+							if((col<0)||(row<0)||(col>576)||(row>482)){notMatchCount++;continue;}
+							//verification
+							if(pixels[row,col].ToArgb()==(color.ToArgb()))
+							{
+								magicSelectedPoints.Add(new Point(row,col));
+							}
+							else
+								notMatchCount++;
+						
+						}
+						else
+						{
+							//up
+						
+							row--;
+							if((col<0)||(row<0)||(col>576)||(row>482)){notMatchCount++;continue;}
+							//verification
+							if(pixels[row,col].ToArgb()==(color.ToArgb()))
+							{
+								magicSelectedPoints.Add(new Point(row,col));
+							}
+							else
+								notMatchCount++;
+						
+						}
+					}
+					steps+=2;
+					if((col!=0)&&(row>=0))
+					{
+						if(!(pixels[row,col-1].ToArgb()==(color.ToArgb())))
+						{
+							notMatchCount++;
+						}
+						if(!(pixels[row,col-2].ToArgb()==(color.ToArgb())))
+						{
+							notMatchCount++;
+						}
+					}
+				
+								
+				
+				}
+				int x=4;
+			}
+			catch(Exception ex){}
+		}
